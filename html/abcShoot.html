@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS V9.0 - 战术指挥官</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link rel="stylesheet" href="../css/game.css">
+</head>
+<body>
+
+    <div id="webgl-container"></div>
+
+    <div class="hud-layer">
+        <div class="warning-flash" id="flash"></div>
+
+        <!-- 1. 左上角充能 -->
+        <div class="weapon-system">
+            <div class="reactor-ring"><div class="ring-inner"></div><div class="ring-outer"></div><div class="charge-num" id="charge-txt">0%</div></div>
+            <div class="bar-frame-v4"><div class="bar-fill" id="charge-bar"></div></div>
+        </div>
+
+        <!-- 2. 左侧队列 -->
+        <div class="queue-panel">
+            <div style="font-size:12px; color:var(--hud-primary); margin-bottom:10px">/// TARGET QUEUE</div>
+            <div id="queue-list"></div>
+        </div>
+
+        <!-- 3. 右侧暴走条 -->
+        <div class="overdrive-bar"><div class="overdrive-fill" id="overdrive"></div></div>
+
+        <!-- 4. 右上角：战术边框 + 数据 + 飞行员卡片 (重构) -->
+        <div class="tactical-hud-container">
+            <!-- 战术边框 SVG (背景) -->
+            <svg class="tactical-border-bg" viewBox="0 0 320 120" preserveAspectRatio="none">
+                <!-- 定义渐变 -->
+                <defs><linearGradient id="gradBorder" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#00f3ff;stop-opacity:1" /><stop offset="100%" style="stop-color:#0077be;stop-opacity:1" /></linearGradient></defs>
+                <!-- 主边框路径: 左侧开口 -> 上横线 -> 右斜角 -> 右竖线 -> 下斜角 -> 左横线 -->
+                <path d="M10,20 L0,20 L20,0 L280,0 L320,40 L320,100 L300,120 L280,120" fill="none" stroke="url(#gradBorder)" stroke-width="2" />
+                <!-- 装饰性细节 -->
+                <rect x="30" y="5" width="40" height="4" fill="#00f3ff" opacity="0.7" />
+                <rect x="75" y="5" width="10" height="4" fill="#00f3ff" opacity="0.5" />
+                <line x1="280" y1="5" x2="310" y2="35" stroke="#00f3ff" stroke-width="2" opacity="0.6" />
+                <path d="M290,115 L310,95" stroke="#00f3ff" stroke-width="2" opacity="0.6" />
+            </svg>
+
+            <!-- 数据分数区 -->
+            <div class="stats-group">
+                <div class="stat-row">SCORE <span class="stat-val" id="score">0</span></div>
+                <div class="stat-row">STREAK <span class="stat-val streak-val" id="streak">0</span></div>
+                <div class="stat-row" style="color:#00f3ff; margin-top:8px; font-size:10px;">SYS: ONLINE</div>
+            </div>
+
+            <!-- 飞行员卡片 -->
+            <div class="pilot-card">
+                <div class="pilot-header" id="pilot-name">NAME: LOADING...</div>
+                <div class="pilot-body">
+                    <!-- 纯 CSS 绘制的剪影头像 -->
+                    <div class="pilot-silhouette"></div>
+                    <!-- 扫描线 -->
+                    <div class="scan-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. 中央文字 -->
+        <div class="target-container">
+            <div class="cn-hint" id="cn-display">加载中...</div>
+            <div class="target-word" id="word-display">LOADING</div>
+        </div>
+
+        <!-- 6. 底部驾驶舱 -->
+        <div class="cockpit-console">
+            <div class="console-deck">
+                <div class="side-wing">
+                    <div class="wing-title">TACTICAL OPS</div>
+                    <button class="tac-btn" id="btn-free" onclick="toggleFreeMode()">[F1] 自由模式: OFF</button>
+                    <button class="tac-btn" id="btn-caps" onclick="toggleCaseMode()">[CAPS] 单词: 小写</button>
+                    <button class="tac-btn" onclick="clearInput()">[ESC] 清空指令</button>
+                </div>
+                <div class="keyboard-stage">
+                    <div class="free-mode-indicator" id="free-mode-label">/// FREE INPUT ACTIVE ///</div>
+                    <div id="keyboard"></div> 
+                </div>
+                <div class="side-wing">
+                    <div class="wing-title">SYS. DIAGNOSTICS</div>
+                    <button class="tac-btn" onclick="cheatMode(6)">TEST: ION CANNON</button>
+                    <button class="tac-btn" onclick="cheatMode(20)">TEST: OVERDRIVE</button>
+                    <button class="tac-btn" onclick="nextTarget()">SKIP TARGET >></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/game.js"></script>
+</body>
+</html>

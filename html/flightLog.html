@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飞行日志 - ABC Shoot</title>
+    <link rel="stylesheet" href="../css/home.css">
+    <style>
+        .log-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .log-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .log-title {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            text-shadow: var(--glow-primary);
+            margin-bottom: 10px;
+        }
+        
+        .log-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+        
+        .log-list {
+            background: rgba(0, 20, 30, 0.8);
+            border: 1px solid var(--primary-color);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .log-item:hover {
+            background: rgba(0, 243, 255, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .pilot-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .pilot-name {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .session-id {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+        
+        .timestamp {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+        }
+        
+        .empty-log {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px;
+            font-style: italic;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="log-container">
+        <div class="log-header">
+            <h1 class="log-title">飞行日志</h1>
+            <p class="log-subtitle">JARVIS V9.0 战术指挥官系统</p>
+        </div>
+        
+        <div class="log-list" id="logList">
+            <div class="empty-log">加载中...</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="clearLog()">
+                <span>清空日志</span>
+            </button>
+            <button class="btn btn-secondary" onclick="exportLog()">
+                <span>导出日志</span>
+            </button>
+            <a href="../index.html" class="btn btn-primary">
+                <span>返回首页</span>
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFlightLog();
+            initParticles();
+        });
+        
+        function loadFlightLog() {
+            const logList = document.getElementById('logList');
+            
+            try {
+                const flightLog = JSON.parse(localStorage.getItem('flightLog') || '[]');
+                
+                if (flightLog.length === 0) {
+                    logList.innerHTML = '<div class="empty-log">暂无飞行记录</div>';
+                    return;
+                }
+                
+                const html = flightLog.reverse().map(record => {
+                    const date = new Date(record.timestamp);
+                    const formattedDate = date.toLocaleString('zh-CN');
+                    
+                    return `
+                        <div class="log-item">
+                            <div class="pilot-info">
+                                <div class="pilot-name">飞行员: ${record.name}</div>
+                                <div class="session-id">会话ID: ${record.sessionId}</div>
+                            </div>
+                            <div class="timestamp">${formattedDate}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                logList.innerHTML = html;
+                
+            } catch (error) {
+                console.error('读取飞行日志失败:', error);
+                logList.innerHTML = '<div class="empty-log">读取日志失败</div>';
+            }
+        }
+        
+        function clearLog() {
+            if (confirm('确定要清空所有飞行日志吗？此操作无法撤销。')) {
+                localStorage.removeItem('flightLog');
+                loadFlightLog();
+            }
+        }
+        
+        function exportLog() {
+            try {
+                const flightLog = JSON.parse(localStorage.getItem('flightLog') || '[]');
+                
+                if (flightLog.length === 0) {
+                    alert('没有日志可以导出');
+                    return;
+                }
+                
+                const dataStr = JSON.stringify(flightLog, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `flight-log-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                
+            } catch (error) {
+                console.error('导出日志失败:', error);
+                alert('导出失败: ' + error.message);
+            }
+        }
+        
+        function initParticles() {
+            const particlesContainer = document.getElementById('particles');
+            if (!particlesContainer) return;
+            
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: absolute;
+                    width: ${Math.random() * 2 + 1}px;
+                    height: ${Math.random() * 2 + 1}px;
+                    background: ${Math.random() > 0.5 ? '#00f3ff' : '#ffbb00'};
+                    border-radius: 50%;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    opacity: ${Math.random() * 0.6 + 0.2};
+                    animation: twinkle ${Math.random() * 3 + 2}s infinite alternate;
+                    box-shadow: 0 0 ${Math.random() * 5 + 2}px currentColor;
+                `;
+                particlesContainer.appendChild(particle);
+            }
+        }
+    </script>
+</body>
+</html>

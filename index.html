@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABC Shoot - 3D 科幻打字游戏</title>
+    <link rel="stylesheet" href="css/home.css">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="site.webmanifest">
+    <meta name="theme-color" content="#00f3ff">
+    <meta name="description" content="ABC Shoot - 沉浸式 3D 科幻打字游戏，提升英语输入技能">
+</head>
+<body>
+    <div class="container">
+        <!-- 背景粒子效果 -->
+        <div class="particles" id="particles"></div>
+        
+        <!-- 主内容 -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-ring"></div>
+                <h1>ABC SHOOT</h1>
+                <div class="version">V9.0</div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="game-info">
+                <h2>3D 科幻打字游戏</h2>
+                <p class="description">
+                    沉浸式科幻体验 | 3D 视觉效果 | 实时战斗系统<br>
+                    提升英语输入技能，享受极致游戏快感
+                </p>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <div class="feature-icon">🚀</div>
+                        <span>3D 战场环境</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">⚡</div>
+                        <span>实时激光特效</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">🎯</div>
+                        <span>精准打击系统</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">📊</div>
+                        <span>战术数据面板</span>
+                    </div>
+                </div>
+
+                <div class="player-input">
+                    <div class="input-group">
+                        <label for="playerName">飞行员呼号</label>
+                        <input type="text" id="playerName" placeholder="请输入您的飞行员呼号" maxlength="20" />
+                        <div class="input-hint">呼号将记录在飞行日志中</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="startGame()">
+                        <span>启动游戏</span>
+                        <div class="btn-glow"></div>
+                    </button>
+                    <button class="btn btn-secondary" onclick="showInstructions()">
+                        <span>操作说明</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="preview-area">
+                <div class="game-preview">
+                    <div class="preview-hud">
+                        <div class="hud-element">TARGET: GALAXY</div>
+                        <div class="hud-element">SCORE: 2580</div>
+                        <div class="hud-element">STREAK: 15</div>
+                    </div>
+                    <div class="preview-text">
+                        <span class="text-done">GAL</span><span class="text-todo">AXY</span>
+                        <span class="cursor-demo"></span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 操作说明模态框 -->
+        <div class="modal" id="instructionModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>操作说明</h3>
+                    <button class="modal-close" onclick="hideInstructions()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="instruction-section">
+                        <h4>基本操作</h4>
+                        <ul>
+                            <li><kbd>字母键</kbd> - 输入对应字母进行攻击</li>
+                            <li><kbd>F1</kbd> - 切换自由输入模式</li>
+                            <li><kbd>CAPS LOCK</kbd> - 切换大小写模式</li>
+                            <li><kbd>ESC</kbd> - 清空当前输入</li>
+                        </ul>
+                    </div>
+                    <div class="instruction-section">
+                        <h4>游戏机制</h4>
+                        <ul>
+                            <li>正确输入单词字母击败敌人</li>
+                            <li>连续命中提升火力等级</li>
+                            <li>错误输入会重置连击数</li>
+                            <li>不同敌人类型有不同难度</li>
+                        </ul>
+                    </div>
+                    <div class="instruction-section">
+                        <h4>HUD 界面</h4>
+                        <ul>
+                            <li>左上角：充能进度和武器系统</li>
+                            <li>右上角：分数、连击数和飞行员信息</li>
+                            <li>右侧：超载能量条</li>
+                            <li>底部：3D虚拟键盘和控制面板</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <div class="footer-info">
+                <span>JARVIS V9.0 战术指挥官系统</span>
+                <div class="footer-links">
+                    <a href="html/flightLog.html" class="footer-link">飞行日志</a>
+                    <span>Powered by Three.js</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/home.js"></script>
+</body>
+</html>
