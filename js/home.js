@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 自动生成默认呼号
         if (!playerNameInput.value) {
-            playerNameInput.placeholder = `飞行员${Math.floor(Math.random() * 9000) + 1000}`;
+            playerNameInput.placeholder = `kim_${Math.floor(Math.random() * 9000) + 1000}`;
         }
     }
 });
