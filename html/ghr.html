@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>参比制剂 & 一致性评价 VFP脚本翻译文档</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f7fa; color: #333; line-height: 1.7; padding: 20px; padding-left: 270px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* 左侧目录 */
+  .sidebar { position: fixed; left: 0; top: 0; width: 250px; height: 100vh; background: #fff; border-right: 1px solid #e2e8f0; padding: 20px 0; overflow-y: auto; z-index: 100; box-shadow: 2px 0 8px rgba(0,0,0,0.04); }
+  .sidebar h3 { font-size: 14px; color: #1a73e8; padding: 0 20px 12px; border-bottom: 1px solid #e2e8f0; margin-bottom: 8px; }
+  .sidebar a { display: block; padding: 6px 20px; font-size: 13px; color: #555; text-decoration: none; border-left: 3px solid transparent; transition: all .15s; }
+  .sidebar a:hover { background: #f0f4ff; color: #1a73e8; }
+  .sidebar a.active { background: #e8f0fe; color: #1a73e8; border-left-color: #1a73e8; font-weight: 600; }
+  .sidebar a.sub { padding-left: 36px; font-size: 12px; color: #888; }
+  .sidebar a.sub:hover, .sidebar a.sub.active { color: #1a73e8; }
+
+  @media (max-width: 900px) {
+    body { padding-left: 20px; }
+    .sidebar { display: none; }
+  }
+
+  /* 标题区 */
+  .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: #fff; border-radius: 12px; padding: 40px; margin-bottom: 30px; text-align: center; }
+  .header h1 { font-size: 28px; margin-bottom: 10px; }
+  .header p { font-size: 15px; opacity: 0.85; }
+
+  /* 基础知识卡片 */
+  .intro-card { background: #fff; border-radius: 10px; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .intro-card h2 { font-size: 20px; color: #1a73e8; margin-bottom: 16px; border-left: 4px solid #1a73e8; padding-left: 12px; }
+  .intro-card h3 { font-size: 16px; color: #333; margin: 16px 0 8px; }
+  .intro-card p, .intro-card li { font-size: 14px; color: #555; }
+  .intro-card ul { padding-left: 20px; }
+  .intro-card li { margin-bottom: 6px; }
+
+  /* 术语表 */
+  .glossary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  .glossary-item { background: #f0f4ff; border-radius: 8px; padding: 12px 16px; }
+  .glossary-item .term { font-weight: 700; color: #1a73e8; font-size: 14px; }
+  .glossary-item .desc { font-size: 13px; color: #555; margin-top: 4px; }
+
+  /* 脚本区块 */
+  .script-section { background: #fff; border-radius: 10px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+  .script-header { padding: 20px 28px; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 12px; }
+  .script-header .badge { display: inline-block; background: #1a73e8; color: #fff; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; }
+  .script-header h2 { font-size: 18px; color: #333; }
+  .script-body { padding: 24px 28px; }
+
+  /* 步骤段 */
+  .prg-block { margin-bottom: 28px; border: 1px solid #e8edf3; border-radius: 8px; overflow: hidden; }
+  .prg-title { background: #e8f0fe; padding: 12px 20px; font-size: 15px; font-weight: 700; color: #1a56c4; display: flex; align-items: center; gap: 10px; }
+  .prg-title .step-num { background: #1a73e8; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .prg-goal { background: #f8fafe; padding: 12px 20px; border-bottom: 1px solid #e8edf3; }
+  .prg-goal strong { color: #1a73e8; }
+  .prg-goal p { font-size: 14px; color: #555; margin-top: 4px; }
+  .prg-content { padding: 16px 20px; }
+
+  /* 代码行翻译 */
+  .code-group { margin-bottom: 16px; }
+  .code-group-title { font-size: 14px; font-weight: 700; color: #444; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #ddd; }
+  .code-line { display: flex; gap: 0; margin-bottom: 2px; font-size: 13px; border-radius: 4px; overflow: hidden; }
+  .code-line:hover { box-shadow: 0 0 0 1px #1a73e8; }
+  .code-original { background: #1e1e2e; color: #cdd6f4; padding: 6px 12px; flex: 1; font-family: "SF Mono", "Fira Code", Consolas, monospace; white-space: pre-wrap; word-break: break-all; }
+  .code-translate { background: #f0fdf4; color: #166534; padding: 6px 12px; flex: 1; border-left: 3px solid #22c55e; }
+  .code-translate.warning { background: #fffbeb; color: #92400e; border-left-color: #f59e0b; }
+  .code-translate.info { background: #eff6ff; color: #1e40af; border-left-color: #3b82f6; }
+
+  /* 流程图 */
+  .flow-chart { background: #fafbfd; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 16px 0; text-align: center; }
+  .flow-step { display: inline-block; background: #e0e7ff; color: #3730a3; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; margin: 4px; }
+  .flow-arrow { display: inline-block; color: #94a3b8; font-size: 18px; margin: 0 4px; vertical-align: middle; }
+
+  /* 注意事项 */
+  .note { background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 12px 0; font-size: 13px; color: #92400e; }
+  .note.danger { background: #fef2f2; border-left-color: #ef4444; color: #991b1b; }
+  .note.success { background: #f0fdf4; border-left-color: #22c55e; color: #166534; }
+  .note.info { background: #eff6ff; border-left-color: #3b82f6; color: #1e40af; }
+
+  /* 对比表格 */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+  th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-weight: 600; color: #475569; border-bottom: 2px solid #e2e8f0; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #555; }
+  tr:hover td { background: #f8fafc; }
+
+  /* 汇总 */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .summary-item { background: #f8fafc; border-radius: 8px; padding: 16px; border: 1px solid #e2e8f0; }
+  .summary-item h4 { font-size: 14px; color: #1a73e8; margin-bottom: 8px; }
+  .summary-item p { font-size: 13px; color: #555; }
+
+  @media (max-width: 768px) {
+    .code-line { flex-direction: column; }
+    .glossary, .summary-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 左侧目录 -->
+<nav class="sidebar">
+  <h3>目录导航</h3>
+  <a href="#sec-bg">一、背景知识</a>
+  <a href="#sec-bg-what" class="sub">1.1 脚本在做什么</a>
+  <a href="#sec-bg-vfp" class="sub">1.2 什么是VFP</a>
+  <a href="#sec-bg-term" class="sub">1.3 核心术语表</a>
+  <a href="#sec-s1">脚本1：参比制剂脚本</a>
+  <a href="#sec-s1-p1" class="sub">PRG 1 追加新增+勘误</a>
+  <a href="#sec-s1-p2" class="sub">PRG 2 应用勘误修改</a>
+  <a href="#sec-s1-p3" class="sub">PRG 3 匹配PFC编码</a>
+  <a href="#sec-s1-p4" class="sub">PRG 4 同步GQCE</a>
+  <a href="#sec-s2">脚本2：一致性评价脚本</a>
+  <a href="#sec-s2-p1" class="sub">PRG 1 导入数据源</a>
+  <a href="#sec-s2-p2" class="sub">PRG 2 匹配批准文号</a>
+  <a href="#sec-s2-p3" class="sub">PRG 3 追加GQCE</a>
+  <a href="#sec-s2-p4" class="sub">PRG 4 清理验证</a>
+  <a href="#sec-s2-p5" class="sub">PRG 5 输出文件</a>
+  <a href="#sec-relation">二、两个脚本的关系</a>
+  <a href="#sec-modify">三、每期需修改清单</a>
+  <a href="#sec-vfp-ref">四、VFP命令速查表</a>
+</nav>
+
+<div class="container">
+
+<!-- ==================== 标题区 ==================== -->
+<div class="header">
+  <h1>参比制剂 & 一致性评价 VFP 脚本翻译文档</h1>
+  <p>面向零基础用户 | 逐行翻译 + 执行流程解读 | Visual FoxPro (VFP) 数据库脚本</p>
+</div>
+
+<!-- ==================== 背景知识 ==================== -->
+<div class="intro-card" id="sec-bg">
+  <h2>一、背景知识：读懂脚本前你需要知道的</h2>
+
+  <h3 id="sec-bg-what">1.1 这两个脚本在做什么？</h3>
+  <p>这两个脚本属于 <strong>IQVIA</strong>（全球医药数据分析公司）内部数据处理流程，用于维护中国药品的两份核心名单：</p>
+  <ul>
+    <li><strong>参比制剂名单</strong> — 国家药监局（NMPA）定期发布的"标杆药品"列表，仿制药需要和它对比</li>
+    <li><strong>一致性评价名单</strong> — 已通过质量一致性评价的仿制药列表（简称"过评"）</li>
+  </ul>
+  <p style="margin-top:10px">每个月/每个季度，NMPA 都会发布新增和勘误信息，这两个脚本就是把最新数据更新到 IQVIA 的内部数据库（NDF）中。</p>
+
+  <h3 id="sec-bg-vfp">1.2 什么是 VFP？</h3>
+  <p>脚本使用的语言是 <strong>Visual FoxPro (VFP)</strong>，一种老牌桌面数据库语言。你可以把它理解为"用命令行操作 Excel 表格"：</p>
+  <ul>
+    <li><code>USE 表名</code> = 打开一个表格文件</li>
+    <li><code>BROWSE</code> = 在屏幕上预览表格内容</li>
+    <li><code>SELECT</code> = 切换到某个已打开的表格 / SQL查询</li>
+    <li><code>APPEND FROM</code> = 从另一个文件追加数据行</li>
+    <li><code>REPLACE ALL ... WITH ... FOR ...</code> = 批量修改符合条件的数据</li>
+    <li><code>INDEX ON ... TO ...</code> = 给表格建索引（为了后续关联查找）</li>
+    <li><code>SET RELATION TO ... INTO ...</code> = 两张表通过某个字段建立关联（类似Excel的VLOOKUP）</li>
+    <li><code>DELETE ALL FOR ...</code> = 标记删除符合条件的行</li>
+    <li><code>PACK</code> = 物理删除已标记的行</li>
+    <li><code>&&</code> = 注释（不执行的说明文字）</li>
+  </ul>
+
+  <h3 id="sec-bg-term">1.3 核心术语表</h3>
+  <div class="glossary">
+    <div class="glossary-item">
+      <div class="term">NDF</div>
+      <div class="desc">National Drug File，IQVIA的药品主数据库，包含所有在中国销售的药品信息</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">PFC (Pack Form Code)</div>
+      <div class="desc">IQVIA内部的药品唯一编码，每个规格的药品有一个PFC</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">DN (Drug Number)</div>
+      <div class="desc">IQVIA内部的药物编号，同一个DN下可能有多个PFC（不同规格）</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">CPA</div>
+      <div class="desc">药品包装档案表，存储批准文号(pzwh)、厂家(manu)、规格(specifi)等信息</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">GQCE</div>
+      <div class="desc">Generic Quality Consistency Evaluation，一致性评价标记总表</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">ATC</div>
+      <div class="desc">解剖学治疗学化学分类系统，用于药品分类的国际编码</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">参比制剂 (Reference Preparation)</div>
+      <div class="desc">NMPA指定的仿制药质量对标的原研/标杆药品</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">过评 (PASS)</div>
+      <div class="desc">通过一致性评价的药品，质量达到与原研药一致的标准</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">pzwh (批准文号)</div>
+      <div class="desc">NMPA颁发的药品上市许可编号，格式如"国药准字H20000001"</div>
+    </div>
+    <div class="glossary-item">
+      <div class="term">药融云 / CIPP</div>
+      <div class="desc">两个外部数据源：药融云是第三方医药数据平台；CIPP是上市药品目录集</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 脚本一：参比制剂 ==================== -->
+<div class="script-section" id="sec-s1">
+  <div class="script-header">
+    <span class="badge">脚本 1</span>
+    <h2>参比制剂脚本 — 更新参比制剂总表并同步PFC</h2>
+  </div>
+  <div class="script-body">
+
+    <!-- 总体流程 -->
+    <div class="flow-chart">
+      <span class="flow-step">PRG 1: 追加新增+勘误</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRG 2: 应用勘误修改</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRG 3: 匹配PFC编码</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRG 4: 同步到GQCE总表</span>
+    </div>
+
+    <!-- PRG 1 -->
+    <div class="prg-block" id="sec-s1-p1">
+      <div class="prg-title"><span class="step-num">1</span> PRG 1：追加新增参比制剂 + 导入勘误数据</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>将NMPA最新发布的参比制剂（新增 + 勘误）追加到"仿制药参比制剂"总表中</p>
+      </div>
+      <div class="prg-content">
+
+        <div class="code-group">
+          <div class="code-group-title">第一步：初始化环境</div>
+          <div class="code-line">
+            <div class="code-original">SET DEFAULT TO "C:\...\2026\4m"</div>
+            <div class="code-translate info">设置工作目录为 2026年4月 的数据文件夹（每期需修改路径）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SET DELETED ON</div>
+            <div class="code-translate">开启"已删除记录不可见"模式，被标记删除的数据不会参与后续操作</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SET EXACT ON</div>
+            <div class="code-translate">字符串比较时要求精确匹配（"ABC" 不等于 "ABCD"）</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第二步：将新增参比制剂追加到总表</div>
+          <div class="code-line">
+            <div class="code-original">USE 仿制药参比制剂</div>
+            <div class="code-translate">打开上一期的参比制剂总表（需事先从公盘复制并去掉日期后缀）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">BROWSE last nowait</div>
+            <div class="code-translate">预览表格内容（显示最后几行），不阻塞后续命令</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">COPY STRUCTURE to CBZJ_STRU</div>
+            <div class="code-translate">复制总表的"表头结构"（只有列名，没有数据）到一个临时表 CBZJ_STRU</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">use CBZJ_STRU → COPY TO CBZJ_新增</div>
+            <div class="code-translate">再拷贝一份空结构表，命名为"CBZJ_新增"</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">use CBZJ_新增 → APPEND FROM ...CBZJ_新增.csv type csv</div>
+            <div class="code-translate warning">从CSV文件导入本期新增的参比制剂数据（路径需根据实际修改）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SELECT 仿制药参比制剂 → APPEND FROM CBZJ_新增</div>
+            <div class="code-translate">将新增数据追加到总表末尾</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第三步：导入勘误数据</div>
+          <div class="code-line">
+            <div class="code-original">COPY TO CBZJ_勘误 → APPEND FROM ...CBZJ_勘误.csv type csv</div>
+            <div class="code-translate warning">用同样的方法创建空表→导入勘误CSV（NMPA发布的修正信息）</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第四步：核验勘误数据的准确性</div>
+          <div class="code-line">
+            <div class="code-original">INDEX on ALLTRIM(序号) to t1</div>
+            <div class="code-translate">对总表的"序号"字段建索引（加速查找）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SET relation to ALLTRIM(序号) into 仿制药参比制剂 addi</div>
+            <div class="code-translate">让勘误表通过"序号"关联到总表（类似Excel的VLOOKUP按序号匹配）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">&&肉眼比对药品通用名是否一致</div>
+            <div class="code-translate warning">需要人工检查：勘误表的药品名与总表是否对得上（NMPA曾出现序号错误）</div>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>注意：</strong>PRG 1 执行完后需要人工 review NDF 中是否已添加该产品，如果已有 PFC，需手动补充至总表中。
+        </div>
+      </div>
+    </div>
+
+    <!-- PRG 2 -->
+    <div class="prg-block" id="sec-s1-p2">
+      <div class="prg-title"><span class="step-num">2</span> PRG 2：将勘误内容应用到总表</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>用勘误数据覆盖更新总表中对应记录的各字段</p>
+      </div>
+      <div class="prg-content">
+        <div class="code-group">
+          <div class="code-group-title">建立反向关联并批量替换</div>
+          <div class="code-line">
+            <div class="code-original">INDEX on ALLTRIM(序号) to s1</div>
+            <div class="code-translate">对勘误表的序号建索引</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SELECT 仿制药参比制剂 → SET relation to ALLTRIM(序号) into CBZJ_勘误</div>
+            <div class="code-translate">总表通过序号关联勘误表（方向反过来，这次是从总表去查勘误表）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">repla all 药品通用名 with cbzj_勘误.药品通用名 for !EOF('CBZJ_勘误')</div>
+            <div class="code-translate">如果在勘误表中找到了匹配记录（!EOF = 没到文件尾 = 找到了），就替换"药品通用名"</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">repla all 英文名称/规格/持证商/备注1/备注2/追加时间 ...</div>
+            <div class="code-translate">同理，逐个替换：英文名称、规格、持证商、备注1、备注2、追加时间</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">BROWSE last for "第104批"$追加时间</div>
+            <div class="code-translate warning">预览本批次被勘误修改的记录（需根据实际批次号修改"第104批"）</div>
+          </div>
+        </div>
+        <div class="note info">
+          <strong>原理：</strong><code>!EOF('CBZJ_勘误')</code> 的意思是"勘误表中存在匹配的记录"。VFP中，当关联查找没找到结果时，指针会指向文件末尾(EOF)，所以 !EOF 就是"找到了"的意思。
+        </div>
+      </div>
+    </div>
+
+    <!-- PRG 3 -->
+    <div class="prg-block" id="sec-s1-p3">
+      <div class="prg-title"><span class="step-num">3</span> PRG 3：从NDF提取新增PFC，与参比制剂匹配</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>为参比制剂总表中的药品补充 IQVIA 内部的 PFC 编码</p>
+      </div>
+      <div class="prg-content">
+        <div class="code-group">
+          <div class="code-group-title">第一步：从NDF提取本期新增产品</div>
+          <div class="code-line">
+            <div class="code-original">USE ndf</div>
+            <div class="code-translate">打开NDF主数据库</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">Sele pfc,name,atc,...from ndf into dbf ndf_new where period='0426'</div>
+            <div class="code-translate">用SQL查询，提取2026年4月新增的产品数据到 ndf_new 表（需修改period）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL for ATC="Z98A2" or ATC="V03B2"</div>
+            <div class="code-translate">删除非药品类产品（Z98A2和V03B2是非药品的ATC分类码）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">PACK</div>
+            <div class="code-translate">物理删除上面标记的记录</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第二步：给新增表添加辅助字段</div>
+          <div class="code-line">
+            <div class="code-original">ALTER table ndf_new add column dn c(7) / csn / name1 / manu / specifi</div>
+            <div class="code-translate">添加5个空列：dn(药物编号)、csn、name1(名称)、manu(厂家)、specifi(规格)</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第三步：通过CPA表填充厂家和规格信息</div>
+          <div class="code-line">
+            <div class="code-original">use cpa → SET FILTER TO LEFT(cpa.notes,1)<>'Z' AND !EMPTY(PACK_cODE)</div>
+            <div class="code-translate">打开CPA表，过滤掉：中药(notes以Z开头)和无包装码的记录</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">INDEX on ALLTRIM(pack_Code) TO s3</div>
+            <div class="code-translate">对CPA表的pack_Code建索引</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SELECT ndf_new → SET RELATION to ALLTRIM(pfc) into cpa addi</div>
+            <div class="code-translate">ndf_new 通过 PFC 关联 CPA 表（PFC = pack_Code）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">REPLACE all dn/csn/name1/manu/specifi with cpa.xxx</div>
+            <div class="code-translate">从CPA表中提取 dn、csn、名称、厂家、规格 填入 ndf_new</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第四步：与参比制剂总表通过DN关联</div>
+          <div class="code-line">
+            <div class="code-original">SELECT 仿制药参比制剂 → INDEX on ALLTRIM(dn) to s5</div>
+            <div class="code-translate">对参比制剂总表的dn字段建索引</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SELECT ndf_new → SET RELATION to ALLTRIM(dn) into 仿制药参比制剂 addi</div>
+            <div class="code-translate">ndf_new 通过 DN 关联参比制剂总表（用于后续人工比对并补充PFC）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRG 4 -->
+    <div class="prg-block" id="sec-s1-p4">
+      <div class="prg-title"><span class="step-num">4</span> PRG 4：汇总所有PFC并同步到GQCE总表</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>把参比制剂总表中所有的PFC提取出来，将新增的同步到GQCE标记总表</p>
+      </div>
+      <div class="prg-content">
+
+        <div class="code-group">
+          <div class="code-group-title">第一步：提取所有PFC（pfc_1 到 pfc_11 共11列）</div>
+          <div class="code-line">
+            <div class="code-original">select distinc pfc_1 as pfc,序号 as 批次 from 仿制药参比制剂 ... into dbf s1<br>select distinc pfc_2 ... into dbf s2<br>... (重复到 pfc_11)</div>
+            <div class="code-translate">参比制剂总表有11个PFC列（一个药品可能有多个包装规格），分别提取去重</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">select s1 → append from s2 → ... → append from s11</div>
+            <div class="code-translate">把11个临时表的数据合并到 s1 中，形成一张完整的PFC清单</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">copy to 参比制剂_pfc总表</div>
+            <div class="code-translate">另存为"参比制剂_pfc总表"</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第二步：清洗批次字段</div>
+          <div class="code-line">
+            <div class="code-original">REPLACE ALL 批次 WITH STREXTRACT(ALLTRIM(批次),'','-') FOR '-'$批次</div>
+            <div class="code-translate">如果批次字段含"-"，只保留"-"前面的部分（例如 "44-5" 变成 "44"）</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第三步：找出GQCE中没有的PFC，追加进去</div>
+          <div class="code-line">
+            <div class="code-original">select pfc from 参比制剂_pfc总表 ... where pfc not in (sele pfc from gqce) into dbf pfc_新增</div>
+            <div class="code-translate">SQL查询：找出在参比制剂总表中有、但GQCE总表中还没有的PFC</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">select gqce → append from pfc_新增</div>
+            <div class="code-translate">将新增PFC追加到GQCE总表</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">repl all gqce with "Reference preparation" for empty(gqce)</div>
+            <div class="code-translate">新加入的记录，gqce字段标记为"Reference preparation"（参比制剂）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">replace all 参比批次 with allt(参比制剂_pfc总表.批次) for !eof(...)</div>
+            <div class="code-translate">同步填写每条记录对应的参比批次号</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== 脚本二：一致性评价 ==================== -->
+<div class="script-section" id="sec-s2">
+  <div class="script-header">
+    <span class="badge">脚本 2</span>
+    <h2>一致性评价脚本 — 更新过评产品并同步GQCE</h2>
+  </div>
+  <div class="script-body">
+
+    <!-- 总体流程 -->
+    <div class="flow-chart">
+      <span class="flow-step">PRG 1: 导入两个数据源</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRG 2: 匹配批准文号筛选过评</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRG 3: 新过评追加到GQCE</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRG 4: 清理&验证</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">PRG 5: 输出最终文件</span>
+    </div>
+
+    <!-- PRG 1 -->
+    <div class="prg-block" id="sec-s2-p1">
+      <div class="prg-title"><span class="step-num">1</span> PRG 1：从两个数据源导入新增过评产品</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>分别从"药融云"和"上市药品目录集(CIPP)"两个来源，导入本月新增的已过评产品到"一致性评价药物汇总"总表</p>
+      </div>
+      <div class="prg-content">
+
+        <div class="code-group">
+          <div class="code-group-title">数据源A：药融云（第三方平台数据）</div>
+          <div class="code-line">
+            <div class="code-original">use 一致性评价药物汇总</div>
+            <div class="code-translate">打开上一期的一致性评价总表（需事先复制并去掉日期后缀）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">INDEX on ALLTRIM(pzwh1) to p1</div>
+            <div class="code-translate">对总表的"批准文号1"字段建索引</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">COPY STRUCTURE to GP_STRU → COPY TO GP_YRY</div>
+            <div class="code-translate">创建一个空结构表 GP_YRY</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">APPEND FROM ...药融云新增202604.csv type csv</div>
+            <div class="code-translate warning">从药融云导出的CSV导入新增过评产品数据（路径需修改）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">INDEX on ALLTRIM(pzwh1) to p2 → SET RELATION to ... into 一致性评价药物汇总</div>
+            <div class="code-translate">通过批准文号关联总表，查看哪些已经存在</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR !EOF('一致性评价药物汇总') → PACK</div>
+            <div class="code-translate">删除已经在总表中存在的记录（去重），只留真正的新增</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SELECT 一致性评价药物汇总 → APPEND FROM GP_YRY</div>
+            <div class="code-translate">将去重后的药融云新增数据追加到总表</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">数据源B：上市药品目录集 (CIPP)</div>
+          <div class="code-line">
+            <div class="code-original">COPY TO GP_CIPP → APPEND FROM ...一致性评价药物汇总202604.csv</div>
+            <div class="code-translate warning">同样的流程，从CIPP导出的CSV导入新增数据</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">INDEX → SET RELATION → DELETE FOR !EOF → PACK → APPEND</div>
+            <div class="code-translate">去重→追加，逻辑与药融云完全一致</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">人工检查</div>
+          <div class="code-line">
+            <div class="code-original">BROWSE LAST FOR LEN(ALLTRIM(pzwh1))<>17</div>
+            <div class="code-translate warning">预览批准文号长度不是17位的记录。标准批准文号如"国药准字H20000001"正好17位，不等于17说明有异常，需人工处理（可能是多个文号并列，需拆分到pzwh2、pzwh3等列）</div>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>核心逻辑：</strong>两个数据源可能有重叠，所以每次导入前都要通过批准文号去重，避免重复记录。
+        </div>
+      </div>
+    </div>
+
+    <!-- PRG 2 -->
+    <div class="prg-block" id="sec-s2-p2">
+      <div class="prg-title"><span class="step-num">2</span> PRG 2：匹配批准文号，识别NDF中的过评产品</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>在NDF数据库中找出通过一致性评价的产品PFC，这是整个脚本最核心、最复杂的一步</p>
+      </div>
+      <div class="prg-content">
+
+        <div class="code-group">
+          <div class="code-group-title">第一步：整理过评批准文号总表</div>
+          <div class="code-line">
+            <div class="code-original">SELECT pzwh1 as 批准文号 FROM 一致性评价药物汇总 INTO dbf 过评批准文号<br>SELECT pzwh2/pzwh3/.../pzwh6 ... APPEND</div>
+            <div class="code-translate">把总表中 pzwh1~pzwh6 六列的批准文号全部提取出来，合并成一张"过评批准文号"清单</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR EMPTY(批准文号) → INDEX on ALLTRIM(批准文号) to t6</div>
+            <div class="code-translate">删除空行，建索引</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第二步：提取NDF中未在GQCE中的产品</div>
+          <div class="code-line">
+            <div class="code-original">SELECT pfc,name,atc,...FROM ndf WHERE PFC NOT IN (SELECT PFC FROM GQCE) INTO dbf pfc_pzwh</div>
+            <div class="code-translate">从NDF中提取所有还没在GQCE总表中的产品PFC（候选名单）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">ALTER table pfc_pzwh ADD COLUMN pzwh/gqce/dn/specifi</div>
+            <div class="code-translate">添加辅助列：批准文号、gqce标记、DN编号、规格</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第三步：过滤掉不适用的产品类型</div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR ALLTRIM(DF)='C' OR ALLTRIM(DF)='Z'</div>
+            <div class="code-translate">删除中药(Z)和联合产品(C)（不适用一致性评价）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR LABCODE='07636'</div>
+            <div class="code-translate">删除"任意厂家"的产品（labcode 07636 是占位符）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR atc='Z98A2' / 'Z95A0' / 'V03B2' / 'A10E0' / V07A / V05A / T02D / T02C / T03A</div>
+            <div class="code-translate">删除非药品、中成药等不适用的ATC分类</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第四步：关联CPA表获取批准文号</div>
+          <div class="code-line">
+            <div class="code-original">use cpa → SET FILTER → INDEX on pack_Code → SET RELATION PFC into CPA</div>
+            <div class="code-translate">打开CPA表，通过PFC关联获取每个产品的批准文号</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">REPLACE ALL PZWH WITH ALLTRIM(CPA.PZWH) ...</div>
+            <div class="code-translate">把CPA中的批准文号、DN、规格等信息填入候选表</div>
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第五步：批准文号数据清洗（重要！）</div>
+          <table>
+            <thead><tr><th>操作</th><th>说明</th><th>示例</th></tr></thead>
+            <tbody>
+              <tr><td><code>STREXTRACT(pzwh,'','(')</code></td><td>去掉括号及括号内容</td><td>"国药准字H123(已过期)" → "国药准字H123"</td></tr>
+              <tr><td><code>STREXTRACT(pzwh,'','/')</code></td><td>去掉斜杠后内容</td><td>"H123/原文号" → "H123"</td></tr>
+              <tr><td><code>chrtranc 去掉 已注销/注销</code></td><td>去掉"已注销""注销"文字</td><td>"H123已注销" → "H123"</td></tr>
+              <tr><td><code>chrtranc 去掉 已过期/过期</code></td><td>去掉过期相关文字</td><td>"H123已过期" → "H123"</td></tr>
+              <tr><td><code>chrtranc 去掉 已到期/到期</code></td><td>去掉到期相关文字</td><td>"H123已到期" → "H123"</td></tr>
+              <tr><td><code>chrtranc 去掉 已下市/下市</code></td><td>去掉下市相关文字</td><td>"H123已下市" → "H123"</td></tr>
+              <tr><td><code>chrtranc 去掉 暂查不到</code></td><td>去掉无法查询标记</td><td>"暂查不到H123" → "H123"</td></tr>
+            </tbody>
+          </table>
+          <div class="note info">
+            <strong>为什么需要清洗？</strong>CPA表中的批准文号可能带有各种状态标注（已注销、过期、下市等），这些后缀会导致匹配失败，所以要先清理干净只保留纯文号。
+          </div>
+        </div>
+
+        <div class="code-group">
+          <div class="code-group-title">第六步：与过评批准文号匹配 + 排除不适用记录</div>
+          <div class="code-line">
+            <div class="code-original">SET RELATION TO ALLTRIM(PZWH) INTO 过评批准文号</div>
+            <div class="code-translate">通过清洗后的批准文号，关联"过评批准文号"总表</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR '查'/'临研'/'过期'/... $PZWH</div>
+            <div class="code-translate">删除批准文号中仍包含异常关键字的记录（兜底清理）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR '国药准字S/J/X/Z'$PZWH AND EOF('过评批准文号')</div>
+            <div class="code-translate">S=生物制品、J=进口、X=体外诊断、Z=中药，如果不在过评名单中就删除</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR '国药准字H'$PZWH AND EOF('过评批准文号')</div>
+            <div class="code-translate">化学药(H)如果不在过评名单中也删除</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">REPLACE ALL gqce WITH 'PASS' FOR !EOF('过评批准文号') AND !EMPTY(PZWH)</div>
+            <div class="code-translate success">核心操作：在过评名单中找到匹配的产品，标记为 "PASS"</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">DELETE ALL FOR left(pfc,9)='000037708' and stru<100</div>
+            <div class="code-translate warning">特殊处理：厄贝沙坦氢氯噻嗪片（华海）多规格共用文号，仅150MG:12.5MG才是PASS</div>
+          </div>
+        </div>
+
+        <div class="note danger">
+          <strong>重点理解：</strong>PRG 2 的核心逻辑是——从NDF中取出所有未标记的产品，通过CPA获取其批准文号，清洗文号后与"过评批准文号"名单进行匹配，匹配上的就标记为 PASS。
+        </div>
+      </div>
+    </div>
+
+    <!-- PRG 3 -->
+    <div class="prg-block" id="sec-s2-p3">
+      <div class="prg-title"><span class="step-num">3</span> PRG 3：将新过评产品追加到GQCE总表</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>把 PRG 2 中标记为 PASS 的产品追加到 GQCE 总表，并补充 DN 和 DF 信息</p>
+      </div>
+      <div class="prg-content">
+        <div class="code-group">
+          <div class="code-line">
+            <div class="code-original">SELECT pfc,gqce from pfc_pzwh where gqce="PASS" into dbf pass_新增</div>
+            <div class="code-translate">从候选表中提取所有标记为 PASS 的产品</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">Select gqce → Append from pass_新增</div>
+            <div class="code-translate">追加到 GQCE 总表</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SET RELATION to pfc into cpa → replace all dn with cpa.dn for EMPTY(dn)</div>
+            <div class="code-translate">通过CPA补充缺失的DN编号</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">INDEX on ALLTRIM(pfc) to t7 (ndf) → SET RELATION → REPLACE all df with ndf.df</div>
+            <div class="code-translate">通过NDF补充剂型(DF)信息</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">BROWSE last for df="C" or df="Z"</div>
+            <div class="code-translate warning">检查是否有中药(Z)或联合产品(C)混入，需记录到Tracker中</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRG 4 -->
+    <div class="prg-block" id="sec-s2-p4">
+      <div class="prg-title"><span class="step-num">4</span> PRG 4：数据清理与一致性验证</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>清除异常记录，填写加入日期，并验证数据一致性</p>
+      </div>
+      <div class="prg-content">
+        <div class="code-group">
+          <div class="code-line">
+            <div class="code-original">use gqce exclusive → PACK</div>
+            <div class="code-translate">物理删除之前标记的 df="C" 或 "Z" 的产品</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">REPLACE all 加入date with "04M2026" for EMPTY(加入date)</div>
+            <div class="code-translate warning">新加入的记录填写加入日期（格式为"月份M年份"，需根据当期修改）</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SELECT distinct LEFT(pfc,9) as pfc9, gqce FROM gqce INTO dbf tmp6</div>
+            <div class="code-translate">提取前9位PFC（代表同一药品不同规格）+ GQCE标记</div>
+          </div>
+          <div class="code-line">
+            <div class="code-original">SELECT pfc9, COUNT(*) ... HAVING cnt1<>1</div>
+            <div class="code-translate">检查同一个PFC9是否有不同的GQCE标记（正常应该只有一个000010264）</div>
+          </div>
+        </div>
+        <div class="note info">
+          <strong>验证逻辑：</strong>同一个药品（PFC前9位相同）理论上应该有统一的GQCE标记。如果出现同一药品既有PASS又有其他标记，就说明数据有问题。已知 PFC9=000010264 是正常的例外，其他异常需要排查。
+        </div>
+      </div>
+    </div>
+
+    <!-- PRG 5 -->
+    <div class="prg-block" id="sec-s2-p5">
+      <div class="prg-title"><span class="step-num">5</span> PRG 5：生成最终提交文件</div>
+      <div class="prg-goal">
+        <strong>目标：</strong>
+        <p>输出最终格式的GQCE文件用于提交</p>
+      </div>
+      <div class="prg-content">
+        <div class="code-group">
+          <div class="code-line">
+            <div class="code-original">SELECT pfc,gqce from gqce into dbf GQCE_MMYY order by pfc</div>
+            <div class="code-translate">提取PFC和GQCE标记，按PFC排序，输出为 GQCE_MMYY 文件（MMYY替换为实际月份年份）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== 两个脚本的关系 ==================== -->
+<div class="intro-card" id="sec-relation">
+  <h2>二、两个脚本的关系与协作</h2>
+
+  <div class="flow-chart" style="text-align:left; line-height: 2.2;">
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 300px; background: #e0e7ff; border-radius: 8px; padding: 16px;">
+        <strong style="color: #3730a3;">脚本1：参比制剂脚本</strong><br>
+        <span style="font-size:13px; color:#555;">
+          输入：NMPA发布的新增+勘误CSV<br>
+          处理：更新参比制剂总表 → 匹配PFC<br>
+          <strong>输出：更新后的GQCE总表（标记 "Reference preparation"）</strong>
+        </span>
+      </div>
+      <div style="flex: 0 0 40px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #94a3b8;">→</div>
+      <div style="flex: 1; min-width: 300px; background: #dbeafe; border-radius: 8px; padding: 16px;">
+        <strong style="color: #1e40af;">脚本2：一致性评价脚本</strong><br>
+        <span style="font-size:13px; color:#555;">
+          输入：药融云 + CIPP 新增过评CSV<br>
+          处理：匹配批准文号 → 标记PASS<br>
+          <strong>输出：最终GQCE_MMYY文件（标记 "PASS"）</strong>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <p style="margin-top: 16px; font-size: 14px; color: #555;">两个脚本<strong>共同维护 GQCE 总表</strong>：</p>
+  <ul style="font-size: 14px; color: #555;">
+    <li>脚本1 负责标记<strong>"Reference preparation"</strong>（被选为参比制剂的产品）</li>
+    <li>脚本2 负责标记<strong>"PASS"</strong>（通过一致性评价的产品）</li>
+    <li>通常<strong>先执行脚本1，再执行脚本2</strong>，因为脚本2需要使用脚本1更新后的GQCE</li>
+  </ul>
+</div>
+
+<!-- ==================== 每期操作前需修改的地方 ==================== -->
+<div class="intro-card" id="sec-modify">
+  <h2>三、每期操作前需修改的内容清单</h2>
+  <table>
+    <thead>
+      <tr><th>脚本</th><th>位置</th><th>需修改内容</th><th>示例</th></tr>
+    </thead>
+    <tbody>
+      <tr><td rowspan="5">参比制剂</td><td>PRG 1</td><td>SET DEFAULT TO 路径中的年月</td><td>2026\4m → 2026\5m</td></tr>
+      <tr><td>PRG 1</td><td>CBZJ_新增.csv / CBZJ_勘误.csv 路径</td><td>根据实际文件位置</td></tr>
+      <tr><td>PRG 2</td><td>"第104批"改为当期批次号</td><td>第105批</td></tr>
+      <tr><td>PRG 3</td><td>period='0426' 改为当期</td><td>period='0526'</td></tr>
+      <tr><td>PRG 4</td><td>无需修改</td><td>-</td></tr>
+      <tr><td rowspan="5">一致性评价</td><td>PRG 1</td><td>SET DEFAULT TO 路径中的年月</td><td>同上</td></tr>
+      <tr><td>PRG 1</td><td>药融云新增CSV路径和年月</td><td>药融云新增202605.csv</td></tr>
+      <tr><td>PRG 1</td><td>CIPP CSV路径和年月</td><td>一致性评价药物汇总202605.csv</td></tr>
+      <tr><td>PRG 4</td><td>加入date 的月份年份</td><td>"04M2026" → "05M2026"</td></tr>
+      <tr><td>PRG 5</td><td>输出文件名 GQCE_MMYY</td><td>GQCE_0526</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== VFP 命令速查 ==================== -->
+<div class="intro-card" id="sec-vfp-ref">
+  <h2>四、VFP 命令速查表</h2>
+  <table>
+    <thead>
+      <tr><th>VFP 命令</th><th>翻译</th><th>类比理解</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>USE 表名</code></td><td>打开数据表</td><td>双击打开 Excel 文件</td></tr>
+      <tr><td><code>SELECT 表名</code></td><td>切换到某个已打开的表</td><td>切换 Excel 工作簿标签</td></tr>
+      <tr><td><code>BROWSE last nowait</code></td><td>预览数据（显示最后几行）</td><td>拖到 Excel 最底部看看</td></tr>
+      <tr><td><code>COPY STRUCTURE TO</code></td><td>复制表结构（无数据）</td><td>复制 Excel 表头到新表</td></tr>
+      <tr><td><code>APPEND FROM</code></td><td>从文件追加数据行</td><td>把另一个 Excel 的数据粘贴过来</td></tr>
+      <tr><td><code>INDEX ON 字段 TO 索引名</code></td><td>建立索引加速查找</td><td>给 Excel 列排序方便 VLOOKUP</td></tr>
+      <tr><td><code>SET RELATION TO 字段 INTO 表</code></td><td>建立两表关联</td><td>Excel 的 VLOOKUP 或 INDEX/MATCH</td></tr>
+      <tr><td><code>REPLACE ALL 字段 WITH 值 FOR 条件</code></td><td>批量替换满足条件的数据</td><td>Excel 的条件替换 + 批量填充</td></tr>
+      <tr><td><code>DELETE ALL FOR 条件</code></td><td>标记删除（软删除）</td><td>给 Excel 行标红准备删除</td></tr>
+      <tr><td><code>PACK</code></td><td>物理删除标记的行</td><td>真正删掉标红的行</td></tr>
+      <tr><td><code>!EOF('表名')</code></td><td>关联查找到了匹配记录</td><td>VLOOKUP 没有返回 #N/A</td></tr>
+      <tr><td><code>EOF('表名')</code></td><td>关联查找没找到</td><td>VLOOKUP 返回了 #N/A</td></tr>
+      <tr><td><code>ALLTRIM()</code></td><td>去掉首尾空格</td><td>Excel 的 TRIM() 函数</td></tr>
+      <tr><td><code>STREXTRACT()</code></td><td>提取子字符串</td><td>Excel 的 MID()/LEFT() 函数</td></tr>
+      <tr><td><code>CHRTRANC()</code></td><td>替换/删除指定文字</td><td>Excel 的 SUBSTITUTE() 函数</td></tr>
+      <tr><td><code>SELECT...FROM...INTO dbf</code></td><td>SQL查询并保存结果</td><td>Excel 高级筛选导出到新表</td></tr>
+      <tr><td><code>&&</code></td><td>注释（不执行）</td><td>Excel 单元格批注</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div style="text-align:center; padding: 30px; color: #94a3b8; font-size: 13px;">
+  文档生成时间：2026-05-22 | 基于参比制剂脚本翻译.docx & 一致性评价脚本.docx
+</div>
+
+</div>
+
+<script>
+// 平滑滚动
+document.querySelectorAll('.sidebar a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+// 滚动高亮
+const links = document.querySelectorAll('.sidebar a');
+const sections = Array.from(links).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+window.addEventListener('scroll', () => {
+  let cur = 0;
+  sections.forEach((s, i) => { if (s.getBoundingClientRect().top <= 80) cur = i; });
+  links.forEach(a => a.classList.remove('active'));
+  if (links[cur]) links[cur].classList.add('active');
+});
+</script>
+</body>
+</html>
